@@ -148,7 +148,7 @@
                     headers: {
                         "Content-Type": "application/json"
                     },
-                    body: JSON.stringify({ text: input.value })
+                    body: JSON.stringify({ plan: input.value })
                 })
                     .then(res => res.json())
                     .then(data => {

@@ -1,5 +1,5 @@
 from flask import Flask, jsonify, render_template, request
-from controller import get_all_users, create_user
+from controller import create_tasks, get_all_users, create_user
 
 def register_routes(app: Flask):
     @app.route('/')
@@ -18,3 +18,9 @@ def register_routes(app: Flask):
         if not username or not email:
             return jsonify({'error': 'Missing username or email'}), 400
         return jsonify(create_user(username, email))
+
+    @app.route('/tasks', methods=['POST'])
+    def add_tasks():
+        data = request.get_json()  # 从请求体里解析 JSON
+        plan = data.get("plan")
+        return jsonify(create_tasks(plan))

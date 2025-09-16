@@ -1,4 +1,4 @@
-from model import User, db
+from model import Tasks, User, db
 
 def get_all_users():
     users = User.query.all()
@@ -9,3 +9,9 @@ def create_user(username, email):
     db.session.add(user)
     db.session.commit()
     return {'id': user.id, 'username': user.username, 'email': user.email}
+
+def create_tasks(plan):
+    tasks = Tasks(plan=plan)
+    db.session.add(tasks)
+    db.session.commit()
+    return {'id': tasks.id, 'plan': tasks.plan}
