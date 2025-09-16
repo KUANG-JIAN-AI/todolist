@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>TodoList</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-100 min-h-screen flex items-center justify-center p-6">
+    <div class="w-full max-w-4xl bg-white p-6 rounded-2xl shadow-lg">
+
+        <!-- Header -->
+        <div class="flex justify-between items-center mb-4">
+            <h1 class="text-2xl font-bold">📋 TodoList</h1>
+            <button onclick="openModal()" class="px-4 py-2 bg-blue-500 text-white rounded-xl hover:bg-blue-600">
+                + 新建任务
+            </button>
+        </div>
+
+        <!-- 搜索框 -->
+        <div class="flex items-center mb-4">
+            <input id="searchInput" type="text" placeholder="搜索任务..." class="w-full p-2 border rounded-xl"
+                onkeyup="filterTasks()">
+        </div>
+
+        <!-- Todo 列表 -->
+        <ul id="todoList" class="space-y-2">
+            <!-- JS 动态插入 -->
+        </ul>
+
+        <!-- 分页 -->
+        <div class="flex justify-between items-center mt-4">
+            <button onclick="prevPage()" class="px-3 py-1 bg-gray-200 rounded-xl hover:bg-gray-300">上一页</button>
+            <span id="pageInfo" class="text-gray-600">第 1 页</span>
+            <button onclick="nextPage()" class="px-3 py-1 bg-gray-200 rounded-xl hover:bg-gray-300">下一页</button>
+        </div>
+    </div>
+
+    <!-- 发布弹窗 -->
+    <div id="modal" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center hidden">
+        <div class="bg-white p-6 rounded-2xl w-96 shadow-lg">
+            <h2 class="text-lg font-bold mb-4">新建任务</h2>
+            <input id="newTaskInput" type="text" placeholder="请输入任务..." class="w-full p-2 border rounded-xl mb-4">
+            <div class="flex justify-end space-x-2">
+                <button onclick="closeModal()" class="px-4 py-2 bg-gray-200 rounded-xl">取消</button>
+                <button onclick="addTask()"
+                    class="px-4 py-2 bg-blue-500 text-white rounded-xl hover:bg-blue-600">发布</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let tasks = [
+            { text: "学习 PHP", done: false },
+            { text: "写博客文章", done: true },
+            { text: "跑步 30 分钟", done: false },
+            { text: "看一本书", done: false },
+            { text: "整理文件", done: true },
+            { text: "开发 TodoList 页面", done: false },
+            { text: "做晚饭", done: false },
+            { text: "联系客户", done: false },
+            { text: "参加会议", done: false },
+            { text: "写周报", done: false }
+        ];
+
+        let currentPage = 1;
+        const pageSize = 5;
+
+        function renderTasks() {
+            const list = document.getElementById("todoList");
+            list.innerHTML = "";
+            const search = document.getElementById("searchInput").value.toLowerCase();
+
+            let filtered = tasks.filter(t => t.text.toLowerCase().includes(search));
+            const totalPages = Math.ceil(filtered.length / pageSize);
+
+            if (currentPage > totalPages) currentPage = totalPages || 1;
+            const start = (currentPage - 1) * pageSize;
+            const pageItems = filtered.slice(start, start + pageSize);
+
+            pageItems.forEach((task, index) => {
+                const li = document.createElement("li");
+                li.className = "p-3 bg-gray-50 border rounded-xl flex justify-between items-center hover:bg-gray-100";
+
+                // 左侧：任务文本 + 状态
+                const textDiv = document.createElement("div");
+                textDiv.innerHTML = `
+          <span class="${task.done ? 'line-through text-gray-400' : ''}">${task.text}</span>
+          <span class="ml-2 text-sm ${task.done ? 'text-green-600' : 'text-red-500'}">
+            ${task.done ? '✔ 已完成' : '✘ 未完成'}
+          </span>
+        `;
+
+                // 右侧：操作按钮
+                const btnDiv = document.createElement("div");
+                btnDiv.className = "space-x-2";
+                btnDiv.innerHTML = `
+          <button onclick="toggleDone(${start + index})" class="px-2 py-1 text-sm rounded-lg ${task.done ? 'bg-yellow-400 hover:bg-yellow-500' : 'bg-green-500 hover:bg-green-600'} text-white">
+            ${task.done ? '撤销' : '完成'}
+          </button>
+          <button onclick="deleteTask(${start + index})" class="px-2 py-1 text-sm rounded-lg bg-red-500 hover:bg-red-600 text-white">删除</button>
+        `;
+
+                li.appendChild(textDiv);
+                li.appendChild(btnDiv);
+                list.appendChild(li);
+            });
+
+            document.getElementById("pageInfo").innerText = `第 ${currentPage} 页 / 共 ${totalPages || 1} 页`;
+        }
+
+        function filterTasks() {
+            currentPage = 1;
+            renderTasks();
+        }
+
+        function prevPage() {
+            if (currentPage > 1) {
+                currentPage--;
+                renderTasks();
+            }
+        }
+
+        function nextPage() {
+            const search = document.getElementById("searchInput").value.toLowerCase();
+            const filtered = tasks.filter(t => t.text.toLowerCase().includes(search));
+            const totalPages = Math.ceil(filtered.length / pageSize);
+            if (currentPage < totalPages) {
+                currentPage++;
+                renderTasks();
+            }
+        }
+
+        function openModal() {
+            document.getElementById("modal").classList.remove("hidden");
+        }
+
+        function closeModal() {
+            document.getElementById("modal").classList.add("hidden");
+        }
+
+        function addTask() {
+            const input = document.getElementById("newTaskInput");
+            if (input.value.trim()) {
+                fetch("/tasks", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({ text: input.value })
+                })
+                    .then(res => res.json())
+                    .then(data => {
+                        console.log("新增任务:", data);
+                        renderTasks(); // 刷新任务列表
+                    });
+                tasks.unshift({ text: input.value.trim(), done: false });
+                input.value = "";
+                closeModal();
+                renderTasks();
+            }
+        }
+
+        function toggleDone(index) {
+            tasks[index].done = !tasks[index].done;
+            renderTasks();
+        }
+
+        function deleteTask(index) {
+            tasks.splice(index, 1);
+            renderTasks();
+        }
+
+        // 初始化渲染
+        renderTasks();
+    </script>
+</body>
+
+</html>
