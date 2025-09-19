@@ -1,3 +1,4 @@
+from zoneinfo import ZoneInfo
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 
@@ -13,11 +14,12 @@ class User(db.Model):
         return f'<User {self.username}>'
 
 class Tasks(db.Model):
+    __tablename__ = "tasks"
     id = db.Column(db.Integer, primary_key=True)
     plan = db.Column(db.String(255), nullable=False)
     state = db.Column(db.SmallInteger, nullable=False, default=1)
-    create_time = db.Column(db.DateTime, default=datetime.utcnow)
-    update_time = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    create_time = db.Column(db.DateTime, default=lambda: datetime.now(ZoneInfo("Asia/Tokyo")), nullable=False)
+    update_time = db.Column(db.DateTime, default=lambda: datetime.now(ZoneInfo("Asia/Tokyo")), onupdate=lambda: datetime.now(ZoneInfo("Asia/Tokyo")), nullable=False)
     delete_time = db.Column(db.DateTime, nullable=True)
     
     def __repr__(self):

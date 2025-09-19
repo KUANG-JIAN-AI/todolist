@@ -68,6 +68,55 @@
         const pageSize = 5;
 
         function renderTasks() {
+            fetch("/tasks", {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+            })
+                .then(res => res.json())
+                .then(data => {
+                    const list = document.getElementById("todoList");
+                    list.innerHTML = "";
+                    // const search = document.getElementById("searchInput").value.toLowerCase();
+
+                    // let filtered = tasks.filter(t => t.text.toLowerCase().includes(search));
+                    // const totalPages = Math.ceil(filtered.length / pageSize);
+
+                    // if (currentPage > totalPages) currentPage = totalPages || 1;
+                    // const start = (currentPage - 1) * pageSize;
+                    // const pageItems = filtered.slice(start, start + pageSize);
+                    data.forEach((task, index) => {
+                        const li = document.createElement("li");
+                        li.className = "p-3 bg-gray-50 border rounded-xl flex justify-between items-center hover:bg-gray-100";
+
+                        // 左侧：任务文本 + 状态
+                        const textDiv = document.createElement("div");
+                        textDiv.innerHTML = `
+                        <span class="${task.state ? 'line-through text-gray-400' : ''}">${task.plan}</span>
+                        <span class="ml-2 text-sm ${task.state ? 'text-green-600' : 'text-red-500'}">
+                            ${task.state ? '✔ 已完成' : '✘ 未完成'}
+                        </span>
+                        `;
+
+                        // 右侧：操作按钮
+                        const btnDiv = document.createElement("div");
+                        btnDiv.className = "space-x-2";
+                        btnDiv.innerHTML = `
+                        <button onclick="toggleDone(${task.id})" class="px-2 py-1 text-sm rounded-lg ${task.state ? 'bg-yellow-400 hover:bg-yellow-500' : 'bg-green-500 hover:bg-green-600'} text-white">
+                            ${task.state ? '撤销' : '完成'}
+                        </button>
+                        <button onclick="deleteTask(${task.id})" class="px-2 py-1 text-sm rounded-lg bg-red-500 hover:bg-red-600 text-white">删除</button>
+                        `;
+
+                        li.appendChild(textDiv);
+                        li.appendChild(btnDiv);
+                        list.appendChild(li);
+                    });
+                    // renderTasks(); // 刷新任务列表
+                });
+
+
             const list = document.getElementById("todoList");
             list.innerHTML = "";
             const search = document.getElementById("searchInput").value.toLowerCase();
@@ -86,21 +135,21 @@
                 // 左侧：任务文本 + 状态
                 const textDiv = document.createElement("div");
                 textDiv.innerHTML = `
-          <span class="${task.done ? 'line-through text-gray-400' : ''}">${task.text}</span>
-          <span class="ml-2 text-sm ${task.done ? 'text-green-600' : 'text-red-500'}">
-            ${task.done ? '✔ 已完成' : '✘ 未完成'}
-          </span>
-        `;
+                <span class="${task.done ? 'line-through text-gray-400' : ''}">${task.text}</span>
+                <span class="ml-2 text-sm ${task.done ? 'text-green-600' : 'text-red-500'}">
+                    ${task.done ? '✔ 已完成' : '✘ 未完成'}
+                </span>
+                `;
 
                 // 右侧：操作按钮
                 const btnDiv = document.createElement("div");
                 btnDiv.className = "space-x-2";
                 btnDiv.innerHTML = `
-          <button onclick="toggleDone(${start + index})" class="px-2 py-1 text-sm rounded-lg ${task.done ? 'bg-yellow-400 hover:bg-yellow-500' : 'bg-green-500 hover:bg-green-600'} text-white">
-            ${task.done ? '撤销' : '完成'}
-          </button>
-          <button onclick="deleteTask(${start + index})" class="px-2 py-1 text-sm rounded-lg bg-red-500 hover:bg-red-600 text-white">删除</button>
-        `;
+                <button onclick="toggleDone(${start + index})" class="px-2 py-1 text-sm rounded-lg ${task.done ? 'bg-yellow-400 hover:bg-yellow-500' : 'bg-green-500 hover:bg-green-600'} text-white">
+                    ${task.done ? '撤销' : '完成'}
+                </button>
+                <button onclick="deleteTask(${start + index})" class="px-2 py-1 text-sm rounded-lg bg-red-500 hover:bg-red-600 text-white">删除</button>
+                `;
 
                 li.appendChild(textDiv);
                 li.appendChild(btnDiv);
@@ -168,8 +217,20 @@
         }
 
         function deleteTask(index) {
-            tasks.splice(index, 1);
-            renderTasks();
+            // tasks.splice(index, 1);
+            fetch("/tasks", {
+                method: "DELETE",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ id: index })
+            })
+                .then(res => res.json())
+                .then(data => {
+                    console.log("删除任务:", data);
+                    renderTasks(); // 刷新任务列表
+                });
+            // renderTasks();
         }
 
         // 初始化渲染
