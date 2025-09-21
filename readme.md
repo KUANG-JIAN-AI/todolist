@@ -1,3 +1,9 @@
+打包指定静态文件目录
+pyinstaller --noconsole --onefile main.py \
+    --add-data "templates;templates" \
+    --add-data "static;static"
+
+
 CREATE TABLE `tasks` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `plan` varchar(255) NOT NULL DEFAULT '',
