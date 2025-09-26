@@ -3,6 +3,7 @@ pyinstaller --noconsole --onefile main.py \
     --add-data "templates;templates" \
     --add-data "static;static"
 
+CREATE DATABASE `db_python`;
 
 CREATE TABLE `tasks` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
