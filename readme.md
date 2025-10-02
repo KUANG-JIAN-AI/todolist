@@ -33,3 +33,34 @@ CREATE TABLE `tasks` (
   `delete_time` datetime DEFAULT NULL,  
   PRIMARY KEY (`id`)  
 ) ENGINE=InnoDB AUTO_INCREMENT=19 DEFAULT CHARSET=utf8mb4   COLLATE=utf8mb4_general_ci;  
+
+
+后台启动项目  
+sudo nano /etc/systemd/system/todolist.service  
+
+[Unit]  
+Description=Flask App - TodoList  
+After=network.target  
+
+[Service]  
+User=www-data  
+Group=www-data  
+WorkingDirectory=/var/www/html/todolist  
+Environment="PATH=/var/www/html/todolist/.venv/bin"  
+ExecStart=/var/www/html/todolist/.venv/bin/python run.py  
+Restart=always  
+
+[Install]  
+WantedBy=multi-user.target  
+
+刷新 systemd 配置  
+sudo systemctl daemon-reload  
+
+启动服务  
+sudo systemctl start todolist  
+
+sudo systemctl enable todolist  
+
+查看状态  
+sudo systemctl status calendar  
+
