@@ -1,7 +1,7 @@
 from datetime import datetime
 from zoneinfo import ZoneInfo
 from flask import request
-from model import Tasks, db
+from app.model import Tasks, db
 
 def get_tasks():
     page = request.args.get("page", 1, type=int)

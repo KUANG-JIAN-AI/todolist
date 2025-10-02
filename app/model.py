@@ -1,9 +1,7 @@
 from zoneinfo import ZoneInfo
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
-
-
-db = SQLAlchemy()
+from . import db
 
 class Tasks(db.Model):
     __tablename__ = "tasks"
